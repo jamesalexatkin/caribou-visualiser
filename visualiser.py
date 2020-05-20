@@ -1,17 +1,23 @@
 # Import libraries
-import pandas as pd
-import folium
+import argparse
 import os
 from datetime import date
+
+import folium
+import pandas as pd
+
+# Set up arg parser
+parser = argparse.ArgumentParser()
+parser.add_argument("caribou_dataset_path", help="Path to CSV dataset for number of Caribou dataset")
+
+# Parse args
+args = parser.parse_args()
+
+# Load the shape of US counties
+state_geo = os.path.join('./datasets', 'us-states.json')
  
-# Load the shape of the zone (US states)
-# Find the original file here: https://github.com/python-visualization/folium/tree/master/examples/data
-# You have to download this file and set the directory where you saved it
-state_geo = os.path.join('./', 'us-states.json')
- 
-# Load the unemployment value of each state
-# Find the original file here: https://github.com/python-visualization/folium/tree/master/examples/data
-num_stores = os.path.join('./', 'US_Caribou_Coffee_Stores_May2020.csv')
+# Load the number of stores for each county
+num_stores = args.caribou_dataset_path
 state_data = pd.read_csv(num_stores)
  
 # Initialize the map:
