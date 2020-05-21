@@ -1,10 +1,11 @@
 import argparse
+import os
 
 import geocoder
 import requests
-
 from bs4 import BeautifulSoup
-import os
+from tqdm import tqdm
+from _datetime import date
 
 
 def read_api_key(filename):
@@ -22,14 +23,33 @@ def format_html_number(num_str):
 
 def find_county_of_city(city_name, state_name):
     search_string = city_name + ", " + state_name
-    print(search_string)
+    # print(search_string)
     results = geocoder.google(search_string, key=GOOGLE_MAPS_API_KEY)
 
-    if results:
+    if results.current_result.county:
         return results.current_result.county
     else:
-        # TODO: error handling
-        return ""
+        return search_string
+
+def format_county(county_of_city, state_name):
+    formatted_county = county_of_city + ", " + state_name
+    return formatted_county
+
+def add_count_to_counties(county_counts, num_in_city, formatted_county):
+    if formatted_county in county_counts:
+        county_counts[formatted_county] = county_counts[formatted_county] + num_in_city
+    else:
+        county_counts[formatted_county] = num_in_city
+
+def write_csv(county_counts):
+    csv_filename = "caribou_dataset_{0}.csv".format(date.today().strftime("%m-%d-%y"))
+    csv_path = os.path.join("datasets", csv_filename)
+
+    with open(csv_path, 'w+') as f:
+        f.write("%s, %s, %s\n" % ("County", "State", "Number"))
+        for key in county_counts.keys():
+            f.write("%s, %s\n" % (key, county_counts[key]))
+
 
 ##### MAIN #####
 
@@ -44,21 +64,6 @@ args = parser.parse_args()
 GOOGLE_MAPS_API_KEY = read_api_key(args.api_key_path)
 
 
-# TODO: steps
-# go to webpage
-# get page element of list
-# for each item
-# get state name
-# go to state page
-# get page element of list
-# for each item
-# get city name
-# look up county
-# get number in city
-# add to county
-
-# write whole thing to csv
-
 CARIBOU_BASE_URL = "https://locations.cariboucoffee.com/"
 CARIBOU_LOCATIONS_URL = os.path.join(CARIBOU_BASE_URL, "us")
 
@@ -70,7 +75,9 @@ html_results = soup.find(id='main')
 
 list_items = html_results.find_all('li', class_='Directory-listItem')
 
-for li in list_items:
+county_counts = {}
+
+for li in tqdm(list_items):
     list_link = li.find('a')
 
     state_name = list_link.text
@@ -101,9 +108,8 @@ for li in list_items:
 
             county_of_city = find_county_of_city(city_name, state_name)
 
+            formatted_county = format_county(county_of_city, state_name)
             
+            add_count_to_counties(county_counts, num_in_city, formatted_county)
 
-
-# results = geocoder.google("Albert Lea, Minnesota", key=GOOGLE_MAPS_API_KEY)
-
-# print(results.current_result.county)
+write_csv(county_counts)
