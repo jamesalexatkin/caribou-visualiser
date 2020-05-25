@@ -6,6 +6,9 @@ import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 from _datetime import date
+import json
+import us
+import random
 
 
 def read_api_key(filename):
@@ -21,34 +24,51 @@ def format_html_number(num_str):
             result = result + char
     return int(result)
 
+def rchop(s, suffix):
+    if suffix and s.endswith(suffix):
+        return s[:-len(suffix)]
+    return s
+
 def find_county_of_city(city_name, state_name):
     search_string = city_name + ", " + state_name
     # print(search_string)
     results = geocoder.google(search_string, key=GOOGLE_MAPS_API_KEY)
 
-    if results.current_result.county:
-        return results.current_result.county
-    else:
-        return search_string
+    returned_county = results.current_result.county
 
-def format_county(county_of_city, state_name):
-    formatted_county = county_of_city + ", " + state_name
+    if returned_county:
+        return rchop(returned_county, " County")
+    else:
+        return city_name
+
+def format_county(county_of_city, state_name, geo_id):
+    formatted_county = county_of_city + ", " + state_name + ", " + geo_id
     return formatted_county
 
-def add_count_to_counties(county_counts, num_in_city, formatted_county):
-    if formatted_county in county_counts:
-        county_counts[formatted_county] = county_counts[formatted_county] + num_in_city
+def find_geo_id(county, state, counties_json):
+    fips = us.states.lookup(state).fips
+
+    for prospective_county in counties_json["features"]:
+        prospective_county_properties = prospective_county["properties"]
+        if prospective_county_properties["NAME"] == county and prospective_county_properties["STATE"] == fips:
+            return prospective_county_properties["GEO_ID"]
+
+    return ""
+
+def add_count_to_counties(county_counts, num_in_city, geo_id):
+    if geo_id in county_counts and county_counts[geo_id] != "":
+        county_counts[geo_id] = county_counts[geo_id] + num_in_city
     else:
-        county_counts[formatted_county] = num_in_city
+        county_counts[geo_id] = num_in_city
 
 def write_csv(county_counts):
-    csv_filename = "caribou_dataset_{0}.csv".format(date.today().strftime("%m-%d-%y"))
+    csv_filename = "caribou_dataset_{0}.csv".format(date.today().strftime("%d-%m-%y"))
     csv_path = os.path.join("datasets", csv_filename)
 
     with open(csv_path, 'w+') as f:
-        f.write("%s, %s, %s\n" % ("County", "State", "Number"))
+        f.write("%s,%s\n" % ("GEO_ID", "Number"))
         for key in county_counts.keys():
-            f.write("%s, %s\n" % (key, county_counts[key]))
+            f.write("%s,%s\n" % (key, county_counts[key]))
 
 
 ##### MAIN #####
@@ -77,6 +97,15 @@ list_items = html_results.find_all('li', class_='Directory-listItem')
 
 county_counts = {}
 
+COUNTIES_FILE = os.path.join("datasets", "us_counties_500k.json")
+counties_json = json.load(open(COUNTIES_FILE))
+
+# TODO: add all counties to county_count
+for c in counties_json["features"]:
+    geo_id = c["properties"]["GEO_ID"]
+    # r = random.randint(0, 10)
+    add_count_to_counties(county_counts, "", geo_id)
+
 for li in tqdm(list_items):
     list_link = li.find('a')
 
@@ -104,12 +133,12 @@ for li in tqdm(list_items):
             city_name = city_list_link.text     
 
             # Extract number of stores in city from HTML to an int
-            num_in_city = format_html_number(li.find('span').text)
+            num_in_city = format_html_number(city_li.find('span').text)
 
             county_of_city = find_county_of_city(city_name, state_name)
 
-            formatted_county = format_county(county_of_city, state_name)
+            geo_id = find_geo_id(county_of_city, state_name, counties_json)
             
-            add_count_to_counties(county_counts, num_in_city, formatted_county)
+            add_count_to_counties(county_counts, num_in_city, geo_id)
 
 write_csv(county_counts)

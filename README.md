@@ -35,4 +35,4 @@ This project was written in Python 3.8.0 and tested on Windows 10 Home.
 
 ## 🙏 Acknowledgements
 
-The dataset of US counties used is provided under `datasets` courtesy of [Eric Celeste](https://eric.clst.org/tech/usgeojson/).
+The dataset of US counties used is provided under `datasets` courtesy of [Eric Celeste](https://eric.clst.org/tech/usgeojson/). These were originally taken from the US Census Bureau.
