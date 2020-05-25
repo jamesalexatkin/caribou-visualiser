@@ -9,6 +9,7 @@ from _datetime import date
 import json
 import us
 import random
+import re
 
 
 def read_api_key(filename):
@@ -23,6 +24,16 @@ def format_html_number(num_str):
         if char.isdigit():
             result = result + char
     return int(result)
+
+def convert_to_base_state_link(state_link):
+    regex = "(us/[a-z]{2}).*"
+
+    search = re.search(regex, state_link, re.IGNORECASE)
+
+    if search:
+        return search.group(1)
+    else:
+        return ""
 
 def rchop(s, suffix):
     if suffix and s.endswith(suffix):
@@ -100,7 +111,6 @@ county_counts = {}
 COUNTIES_FILE = os.path.join("datasets", "us_counties_500k.json")
 counties_json = json.load(open(COUNTIES_FILE))
 
-# TODO: add all counties to county_count
 for c in counties_json["features"]:
     geo_id = c["properties"]["GEO_ID"]
     # r = random.randint(0, 10)
@@ -115,30 +125,31 @@ for li in tqdm(list_items):
     # Extract number of stores in state from HTML to an int
     num_in_state = format_html_number(li.find('span').text)
 
+    # Edge case where states only have one store
+    # Caribou website has the link directly to the store, rather than the state
     if num_in_state == 1:
-        # TODO: handle case where state only has one store
-        pass
-    # Else state has multiple stores
-    else:
-        state_page_url = os.path.join(CARIBOU_BASE_URL, state_link)
-        state_page = requests.get(state_page_url)
-        state_soup = BeautifulSoup(state_page.content, 'html.parser')
-        state_html_results = state_soup.find(id='main')
+        state_link = convert_to_base_state_link(state_link)
 
-        city_list_items = state_html_results.find_all('li', class_='Directory-listItem')
 
-        for city_li in city_list_items:
-            city_list_link = city_li.find('a')
+    state_page_url = os.path.join(CARIBOU_BASE_URL, state_link)
+    state_page = requests.get(state_page_url)
+    state_soup = BeautifulSoup(state_page.content, 'html.parser')
+    state_html_results = state_soup.find(id='main')
 
-            city_name = city_list_link.text     
+    city_list_items = state_html_results.find_all('li', class_='Directory-listItem')
 
-            # Extract number of stores in city from HTML to an int
-            num_in_city = format_html_number(city_li.find('span').text)
+    for city_li in city_list_items:
+        city_list_link = city_li.find('a')
 
-            county_of_city = find_county_of_city(city_name, state_name)
+        city_name = city_list_link.text     
 
-            geo_id = find_geo_id(county_of_city, state_name, counties_json)
-            
-            add_count_to_counties(county_counts, num_in_city, geo_id)
+        # Extract number of stores in city from HTML to an int
+        num_in_city = format_html_number(city_li.find('span').text)
+
+        county_of_city = find_county_of_city(city_name, state_name)
+
+        geo_id = find_geo_id(county_of_city, state_name, counties_json)
+        
+        add_count_to_counties(county_counts, num_in_city, geo_id)
 
 write_csv(county_counts)

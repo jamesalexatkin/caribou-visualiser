@@ -22,7 +22,7 @@ num_stores = args.caribou_dataset_path
 county_data = pd.read_csv(num_stores)
 
 # Initialize the map:
-m = folium.Map(location=[37, -102], zoom_start=4)
+m = folium.Map(location=[38, -103], zoom_start=5)
 
 folium.Choropleth(
     geo_data=county_geo_filename,
@@ -30,6 +30,7 @@ folium.Choropleth(
     # columns=['County', ' Number'],
     columns=['GEO_ID','Number'],
     key_on='properties.GEO_ID',
+    # bins=11,
     fill_color='YlGnBu',
     fill_opacity=0.8,
     line_weight=1,
