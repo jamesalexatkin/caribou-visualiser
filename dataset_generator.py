@@ -159,6 +159,6 @@ elif region_type == "counties":
             
             add_count_to_counties(county_counts, num_in_city, geo_id)
 
-    output_filename = "caribou_" + region_type + "_dataset_" + date.today().strftime("%d-%m-%y") + ".html"
+    output_filename = "caribou_" + region_type + "_dataset_" + date.today().strftime("%d-%m-%y") + ".csv"
     output_path = os.path.join('./datasets/', output_filename)
     write_csv(county_counts, output_path)
