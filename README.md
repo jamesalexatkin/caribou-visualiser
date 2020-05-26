@@ -15,6 +15,8 @@
 
 This project allows for the visualisation of the number of Caribou Coffee stores in the United States by states and counties. The resulting visualisation is in the form of a [choropleth](https://en.wikipedia.org/wiki/Choropleth_map), or shaded map. Darker regions represent a higher number of coffee stores.
 
+The maps are produced by [`folium`](https://github.com/python-visualization/folium), a Python library capable of rendering maps in HTML files.
+
 ## 🏃‍♀️ Running the code
 
 I have included code both to generate a dataset and visualise a dataset.
