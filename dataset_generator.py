@@ -66,13 +66,28 @@ def find_geo_id(county, state, counties_json):
 
     return ""
 
+def get_state_id(state_name):
+    return us.states.lookup(state_name).abbr
+
+def add_count_to_states(state_counts, num_in_state, state_id):
+    if state_id in state_counts and state_counts[state_id] != "":
+        state_counts[state_id] = state_counts[state_id] + num_in_state
+    else:
+        state_counts[state_id] = num_in_state
+
+def write_states_csv(state_counts, output_path):
+    with open(output_path, 'w+') as f:
+        f.write("%s,%s\n" % ("id", "Number"))
+        for key in state_counts.keys():
+            f.write("%s,%s\n" % (key, state_counts[key]))
+
 def add_count_to_counties(county_counts, num_in_city, geo_id):
     if geo_id in county_counts and county_counts[geo_id] != "":
         county_counts[geo_id] = county_counts[geo_id] + num_in_city
     else:
         county_counts[geo_id] = num_in_city
 
-def write_csv(county_counts, output_path):
+def write_counties_csv(county_counts, output_path):
     with open(output_path, 'w+') as f:
         f.write("%s,%s\n" % ("GEO_ID", "Number"))
         for key in county_counts.keys():
@@ -108,8 +123,33 @@ list_items = html_results.find_all('li', class_='Directory-listItem')
 
 # Sample map at state-level
 if region_type == "states":
-    # TODO
-    pass
+    
+    state_counts = {}
+
+    STATES_FILE = os.path.join("datasets", "us_states.json")
+    states_json = json.load(open(STATES_FILE))
+
+    for s in states_json["features"]:
+        state_id = s["id"]
+        add_count_to_states(state_counts, "", state_id)
+
+    for li in tqdm(list_items):
+        list_link = li.find('a')
+
+        state_name = list_link.text
+        state_link = list_link['href']
+
+        # Extract number of stores in state from HTML to an int
+        num_in_state = format_html_number(li.find('span').text)
+
+        state_id = get_state_id(state_name)
+
+        add_count_to_states(state_counts, num_in_state, state_id)
+
+
+    output_filename = "caribou_" + region_type + "_dataset_" + date.today().strftime("%d-%m-%y") + ".csv"
+    output_path = os.path.join('./datasets/', output_filename)
+    write_states_csv(state_counts, output_path)
 
 # Sample map at county-level
 elif region_type == "counties":
@@ -161,4 +201,4 @@ elif region_type == "counties":
 
     output_filename = "caribou_" + region_type + "_dataset_" + date.today().strftime("%d-%m-%y") + ".csv"
     output_path = os.path.join('./datasets/', output_filename)
-    write_csv(county_counts, output_path)
+    write_counties_csv(county_counts, output_path)

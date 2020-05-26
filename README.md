@@ -2,7 +2,12 @@
 <p align="center">Choropleth visualisation of Caribou coffee stores in the US.</p>
 
 <p align="center">
-	<img src="https://raw.githubusercontent.com/jamesalexatkin/caribou-visualiser/master/results/caribou_counties_map_26-05-20.png?token=AESOEZ2CIYGTJADV6CXW3CS6ZVQIE" alt="">
+	<img src="https://github.com/jamesalexatkin/caribou-visualiser/raw/master/results/caribou_states_map_26-05-20.png" alt="">
+</p>
+<p align="center">By State</p>
+
+<p align="center">
+	<img src="https://github.com/jamesalexatkin/caribou-visualiser/raw/master/results/caribou_counties_map_26-05-20.png" alt="">
 </p>
 <p align="center">By County</p>
 
