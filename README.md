@@ -2,18 +2,18 @@
 <p align="center">Choropleth visualisation of Caribou coffee stores in the US.</p>
 
 <p align="center">
-	<a href="https://jamesatk.in/caribou_states_map_26-05-20.html">
+	<a href="https://jamesatk.in/caribou_states_map_26-05-20.html" target="_blank">
 		<img src="https://github.com/jamesalexatkin/caribou-visualiser/raw/master/results/caribou_states_map_26-05-20.png" alt="">
 	</a>
 </p>
-<p align="center">By State <a href="https://jamesatk.in/caribou_states_map_26-05-20.html">(View full size)</p>
+<p align="center">By State <a href="https://jamesatk.in/caribou_states_map_26-05-20.html" target="_blank">(View full size)</p>
 
 <p align="center">
-	<a href="https://jamesatk.in/caribou_counties_map_26-05-20.html">
+	<a href="https://jamesatk.in/caribou_counties_map_26-05-20.html" target="_blank">
 		<img src="https://github.com/jamesalexatkin/caribou-visualiser/raw/master/results/caribou_counties_map_26-05-20.png" alt="">
 	</a>
 </p>
-<p align="center">By County <a href="https://jamesatk.in/caribou_counties_map_26-05-20.html">(View full size)</a></p>
+<p align="center">By County <a href="https://jamesatk.in/caribou_counties_map_26-05-20.html" target="_blank">(View full size)</a></p>
 
 ## 🙋 What is this?
 
